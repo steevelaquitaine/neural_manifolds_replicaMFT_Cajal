@@ -1,5 +1,8 @@
 # Replica Mean Field Theory Analysis of Object Manifolds
 
+original authors: SueYeon Chung, CStephenson970  
+modified: Steeve Laquitaine  
+
 Analysis tool for measuring manifold classification capacity, manifold radius, and manifold dimension, implemented for the results in *[Untangling in Invariant Speech Recognition, (2019) NeurIPS](https://arxiv.org/abs/2003.01787)*.  The code implements the technique first described in *Classification and Geometry of General Perceptual Manifolds, (2018) Physical Review X.* and refined in *Separability and Geometry of Object Manifolds in Deep Neural Networks, (2019) BioRxiv; (2020) Nature Communications*. 
 
 If you find this code useful for your research, please cite [our paper](https://arxiv.org/abs/2003.01787):  
@@ -13,17 +16,31 @@ If you find this code useful for your research, please cite [our paper](https://
 }
 ```
 
-## Install
+## Install 
+### With pip
 
 First install required dependencies with
-```
+```bash
 pip install -r requirements.txt
 ```
 
 Then install the package via
-```
+```bash
 pip install -e .
 ```
+
+### With Conda 
+
+This works better for other versions of Python (e.g., Python==3.10.12).
+
+Run in project root's directory:
+
+```bash
+conda install --file env.yml 
+conda activate neural_manifolds
+pip install -e .
+```
+
 ## Usage
 The following contains usage instructions for constructing data and feeding it to the analysis tool. An example analysis of a deep neural network implemented in PyTorch along with some higher level tools can be found in this [example notebook](examples/MFTMA_VGG16_example.ipynb).
 

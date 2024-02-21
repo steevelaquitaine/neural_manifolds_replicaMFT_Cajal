@@ -10,10 +10,13 @@ import autograd.numpy as np
 from scipy.linalg import qr
 from functools import partial
 
+import pymanopt
 from cvxopt import solvers, matrix
 from pymanopt.manifolds import Stiefel
 from pymanopt import Problem
-from pymanopt.solvers import ConjugateGradient
+#from pymanopt.solvers import ConjugateGradient
+from pymanopt.optimizers import ConjugateGradient
+
 
 # Configure cvxopt solvers
 solvers.options['show_progress'] = False
@@ -352,7 +355,7 @@ def fun_FA(centers, maxK, max_iter, n_repeats, s_all=None, verbose=False, conjug
 
             # Compute the optimal V for this i
             V1tmp, output = CGmanopt(V0, partial(square_corrcoeff_full_cost, grad=False), X, **opts)
-
+            
             # Compute the cost
             cost_after, _ = square_corrcoeff_full_cost(V1tmp, X, grad=False)
 
@@ -424,12 +427,19 @@ def CGmanopt(X, objective_function, A, **kwargs):
     '''
 
     manifold = Stiefel(X.shape[0], X.shape[1])
+    # def cost(X):
+    #     c, _ = objective_function(X, A)
+    #     return c
+    @pymanopt.function.autograd(manifold)
     def cost(X):
         c, _ = objective_function(X, A)
         return c
-    problem = Problem(manifold=manifold, cost=cost, verbosity=0)
-    solver = ConjugateGradient(logverbosity=0)
-    Xopt = solver.solve(problem)
+    #problem = Problem(manifold=manifold, cost=cost, verbosity=0)
+    problem = Problem(manifold=manifold, cost=cost)
+    #solver = ConjugateGradient(logverbosity=0)
+    solver = ConjugateGradient()
+    #Xopt = solver.solve(problem)
+    Xopt = solver.run(problem).point
     return Xopt, None
 
 
@@ -443,10 +453,15 @@ def square_corrcoeff_full_cost(V, X, grad=True):
         X: 2D array of shape (P, N) containing centers of P manifolds in an N=P-1 dimensional
             orthonormal basis
     '''
-    # Verify that the shapes are correct
-    P, N = X.shape
-    N_v, K = V.shape
-    assert N_v == N
+    # Verify that the shapes are correct    
+    try:
+        P, N = X.shape
+        N_v, K = V.shape
+        assert N_v == N
+    except:
+        if type(V)==pymanopt.optimizers.optimizer.OptimizerResult:
+            pass
+            #return
 
     # Calculate the cost
     C = np.matmul(X, X.T)
@@ -472,7 +487,6 @@ def square_corrcoeff_full_cost(V, X, grad=True):
         Gmni +=  PF2 * c0.reshape(P, 1, 1, 1) * C2 * X1
         Gmni += PF2 * (c0.T).reshape(1, P, 1, 1) * C1 * X2
         gradient = np.sum(Gmni, axis=(0, 1))
-
     return cost, gradient
 
 
